@@ -12,6 +12,7 @@ const Camera = () => {
   const onCapture = async() => {
     setCapturedPhoto(cameraRef.current.getScreenshot());
   };
+  
   //save get captchure pictur other div
   const onSave = async() => {
     let base64String = capturedPhoto;
