@@ -1,14 +1,12 @@
-import React,{Component} from "react";
+import React, { Component } from "react";
 import Camera from "../Components/Camera";
 
-class CameraPage extends Component{
-  render(){
-    return(
+const CameraPage = () => {
+  return (
     <div>
-        <Camera/>
+      <Camera />
     </div>
-    )
-  }
-}
+  );
+};
 
 export default CameraPage;
