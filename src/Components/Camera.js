@@ -12,6 +12,7 @@ const Camera = () => {
   const [cameraError, setCameraError] = useState(false);
   const [ageAndGender, setAgeAndGender] = useState([]);
   const [userFaceExpression, setUserFaceExpression] = useState([]);
+  const [userFaceLandmark, setUserFaceLandmark] = useState([]);
   const [getFaceExp, setGetFaceExp] = useState("");
   const [userAge, setUserAge] = useState();
   const [userGender, setUserGender] = useState();
@@ -21,8 +22,16 @@ const Camera = () => {
   // just get captchure picture
   const onCapture = async () => {
     setCapturedPhoto(cameraRef.current.getScreenshot());
+    setTimeout(function(){
+      overallFaceAnalicis();
+    },1000)
   };
-
+//overall faceAnalicsis
+const overallFaceAnalicis = () => {
+  ageAndGenderDetection();
+  onFaceExpression();
+  getFaceLandmark();
+}
   //save get captchure pictur other div
   const onSave = async () => {
     let base64String = capturedPhoto;
@@ -62,7 +71,7 @@ const Camera = () => {
       .withAgeAndGender();
     setAgeAndGender(getAgeAndGender);
   }
-
+//face expression
   async function onFaceExpression() {
     await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
     await faceapi.nets.faceExpressionNet.loadFromUri("/models");
@@ -78,7 +87,7 @@ const Camera = () => {
     let fearful = getFaceExpression[0]["expressions"]["fearful"] + 0.1;
     let disgusted = getFaceExpression[0]["expressions"]["disgusted"] + 0.1;
     let surprised = getFaceExpression[0]["expressions"]["surprised"] + 0.1;
-    
+
     if (neutral > 0.9 && neutral < 1.2) {
       setGetFaceExp("neutral");
     } else if (happy > 0.9 && happy < 1.2) {
@@ -99,6 +108,17 @@ const Camera = () => {
     setUserFaceExpression(getFaceExpression);
   }
 
+
+  // face landmark 
+  async function getFaceLandmark() {
+    await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
+    await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
+    var images = document.getElementById("first-img");
+    let getFaceLandMark = await faceapi
+      .detectAllFaces(images)
+      .withFaceLandmarks();
+      setUserFaceLandmark(getFaceLandMark);
+  }
   const damiJson = [{ name: "Demo one", Age: 25 }];
 
   return (
@@ -158,8 +178,14 @@ const Camera = () => {
               <ReactJson src={userFaceExpression} theme="monokai" />
             </Col>
             <Col className="p-2" sm={12} md={6} lg={6}>
-              <h2>Age Estami</h2>
-              <ReactJson src={damiJson} theme="monokai" />
+              <h2>User Face Landmark</h2>
+              <button
+                onClick={getFaceLandmark}
+                className="btn mt-3 btn-lg btn-primary"
+              >
+                Get Face Landmrk
+              </button>
+              <ReactJson src={userFaceLandmark} theme="monokai" />
             </Col>
             <Col className="p-2" sm={12} md={6} lg={6}>
               <h2>Gender Recognition</h2>
