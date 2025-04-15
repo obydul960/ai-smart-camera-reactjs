@@ -13,37 +13,27 @@ const Camera = () => {
   const [ageAndGender, setAgeAndGender] = useState([]);
   const [userFaceExpression, setUserFaceExpression] = useState([]);
   const [userFaceLandmark, setUserFaceLandmark] = useState([]);
+  const [lerfToRightEye, setLerfToRightEye] = useState("0");
+  const [noseToLeftMouth, setNoseToLeftMouth] = useState("0");
+  const [noseToRightMouth, setNoseToRightMouth] = useState("0");
+  const [noseToLeftEye, setNoseToLeftEye] = useState("0");
+  const [noseToRightEye, setNoseToRightEye] = useState("0");
+  
   const [getFaceExp, setGetFaceExp] = useState("");
   const [userAge, setUserAge] = useState();
   const [userGender, setUserGender] = useState();
   const age = "";
   const gender = "";
   console.log("ageAndGender ===", ageAndGender);
-  // just get captchure picture
-  const onCapture = async () => {
-    setCapturedPhoto(cameraRef.current.getScreenshot());
-    setTimeout(function(){
-      overallFaceAnalicis();
-    },1000)
-  };
-//overall faceAnalicsis
-const overallFaceAnalicis = () => {
-  ageAndGenderDetection();
-  onFaceExpression();
-  getFaceLandmark();
-}
-  //save get captchure pictur other div
-  const onSave = async () => {
-    let base64String = capturedPhoto;
-    let a = document.createElement("a");
-    a.href = base64String;
-    a.download = "webCamp.jpeg";
-    a.click();
-  };
-  //any error get
-  const onCameraError = async () => {
-    setCameraError(true);
-  };
+
+    //save get captchure pictur other div
+    const onSave = async () => {
+      let base64String = capturedPhoto;
+      let a = document.createElement("a");
+      a.href = base64String;
+      a.download = "webCamp.jpeg";
+      a.click();
+    };
   //any error show sweet alert
   const cameraErrorAlert = async () => {
     if (cameraError === true) {
@@ -56,10 +46,82 @@ const overallFaceAnalicis = () => {
       );
     }
   };
-  // sweet alert popup message show compermation
-  const onCameraTryAgain = async () => {
-    window.location.href = "/";
+    // sweet alert popup message show compermation
+    const onCameraTryAgain = async () => {
+      window.location.href = "/";
+    };
+
+  //any error get
+  const onCameraError = async () => {
+    setCameraError(true);
   };
+
+
+  // just get captchure picture
+  const onCapture = async () => {
+    setCapturedPhoto(cameraRef.current.getScreenshot());
+    setTimeout(function(){
+      overallFaceAnalicis();
+    },1000)
+  };
+
+  const onLerfToRightEye = async (userFaceLandmark) => {
+    // distance = Math.sqrt((x2 - x1)^2 + (y2 - y1)^2)
+    let x1 = userFaceLandmark['landmarks']['_positions'][37]['_x'];
+    let y1 = userFaceLandmark['landmarks']['_positions'][37]['_y'];
+    let x2 = userFaceLandmark['landmarks']['_positions'][46]['_x'];
+    let y2 = userFaceLandmark['landmarks']['_positions'][46]['_y'];
+
+    let distance = Math.sqrt((Math.pow((x2-x1),2)) + (Math.pow((y2-y1),2)));
+    setLerfToRightEye(distance);
+
+  }
+  const onNoseToLeftMouth = async (userFaceLandmark) => {
+    let x1 = userFaceLandmark['landmarks']['_positions'][31]['_x'];
+    let y1 = userFaceLandmark['landmarks']['_positions'][31]['_y'];
+    let x2 = userFaceLandmark['landmarks']['_positions'][49]['_x'];
+    let y2 = userFaceLandmark['landmarks']['_positions'][49]['_y'];
+
+    let distance = Math.sqrt((Math.pow((x2-x1),2)) + (Math.pow((y2-y1),2)));
+    setNoseToLeftMouth(distance);
+
+  }
+  const onNoseToRightMouth = async (userFaceLandmark) => {
+    let x1 = userFaceLandmark['landmarks']['_positions'][31]['_x'];
+    let y1 = userFaceLandmark['landmarks']['_positions'][31]['_y'];
+    let x2 = userFaceLandmark['landmarks']['_positions'][55]['_x'];
+    let y2 = userFaceLandmark['landmarks']['_positions'][55]['_y'];
+    let distance = Math.sqrt((Math.pow((x2-x1),2)) + (Math.pow((y2-y1),2)));
+    setNoseToRightMouth(distance);
+
+  }
+  const onNoseToLeftEye = async (userFaceLandmark) => {
+    let x1 = userFaceLandmark['landmarks']['_positions'][31]['_x'];
+    let y1 = userFaceLandmark['landmarks']['_positions'][31]['_y'];
+    let x2 = userFaceLandmark['landmarks']['_positions'][37]['_x'];
+    let y2 = userFaceLandmark['landmarks']['_positions'][37]['_y'];
+    let distance = Math.sqrt((Math.pow((x2-x1),2)) + (Math.pow((y2-y1),2)));
+    setNoseToLeftEye(distance);
+
+  }
+  const onNoseToRightEye = async (userFaceLandmark) => {
+    let x1 = userFaceLandmark['landmarks']['_positions'][31]['_x'];
+    let y1 = userFaceLandmark['landmarks']['_positions'][31]['_y'];
+    let x2 = userFaceLandmark['landmarks']['_positions'][46]['_x'];
+    let y2 = userFaceLandmark['landmarks']['_positions'][46]['_y'];
+    let distance = Math.sqrt((Math.pow((x2-x1),2)) + (Math.pow((y2-y1),2)));
+    setNoseToRightEye(distance);
+
+  }
+//overall faceAnalicsis
+const overallFaceAnalicis = () => {
+  ageAndGenderDetection();
+  onFaceExpression();
+  onLandmarkDectation();
+}
+
+
+
 
   //age and gender define
   async function ageAndGenderDetection() {
@@ -70,6 +132,34 @@ const overallFaceAnalicis = () => {
       .detectAllFaces(images)
       .withAgeAndGender();
     setAgeAndGender(getAgeAndGender);
+  }
+
+  //onFace analysis
+  async function onFaceAnalysis() {
+    await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
+    await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
+    await faceapi.nets.faceExpressionNet.loadFromUri("/models");
+    await faceapi.nets.ageGenderNet.loadFromUri("/models");
+    const imageID = document.getElementById("first-img");
+    const detection = await faceapi.detectSingleFace(imageID)
+    .withFaceLandmarks()
+    .withFaceExpressions()
+    .withAgeAndGender();
+
+    //get age and gender
+    let age = (detection['age']).toFixed(0);
+    let gender = (detection['gender']);
+    setUserAge(age);
+    setUserGender(gender);
+
+    // Landamark Distances...
+    onLerfToRightEye(detection);
+    onNoseToLeftMouth(detection);
+    onNoseToRightMouth(detection);
+    onNoseToLeftEye(detection);
+    onNoseToRightEye(detection);
+
+    
   }
 //face expression
   async function onFaceExpression() {
@@ -105,12 +195,13 @@ const overallFaceAnalicis = () => {
     } else {
       setGetFaceExp("Null");
     }
+
     setUserFaceExpression(getFaceExpression);
   }
 
 
   // face landmark 
-  async function getFaceLandmark() {
+  async function onLandmarkDectation() {
     await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
     await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
     var images = document.getElementById("first-img");
@@ -151,6 +242,11 @@ const overallFaceAnalicis = () => {
               <p>Age : {userAge}</p>
               <p>Gender : {userGender}</p>
               <p>Expression : {getFaceExp}</p>
+              <p>Lerf  To Right Eye : {lerfToRightEye || 0}</p>
+              <p>Nose To Left Mouth : {noseToLeftMouth || 0}</p>
+              <p>Nose To Right Mouth : {noseToRightMouth || 0}</p>
+              <p>Nose To Left Eye : {noseToLeftEye || 0}</p>
+              <p>Nose To Right Eye : {noseToRightEye || 0}</p>
             </Col>
           </Row>
         </Container>
@@ -159,6 +255,12 @@ const overallFaceAnalicis = () => {
           <Row>
             <Col className="p-2" sm={12} md={6} lg={6}>
               <h2>Face Landmrk</h2>
+              <button
+                onClick={onFaceAnalysis}
+                className="btn mt-3 btn-lg btn-primary"
+              >
+                Face Analysis
+              </button>
               <button
                 onClick={ageAndGenderDetection}
                 className="btn mt-3 btn-lg btn-primary"
@@ -180,7 +282,7 @@ const overallFaceAnalicis = () => {
             <Col className="p-2" sm={12} md={6} lg={6}>
               <h2>User Face Landmark</h2>
               <button
-                onClick={getFaceLandmark}
+                onClick={onLandmarkDectation}
                 className="btn mt-3 btn-lg btn-primary"
               >
                 Get Face Landmrk
@@ -195,7 +297,7 @@ const overallFaceAnalicis = () => {
         </Container>
         {cameraErrorAlert}
       </Fragment>
-      ßß
+      
     </div>
   );
 };
